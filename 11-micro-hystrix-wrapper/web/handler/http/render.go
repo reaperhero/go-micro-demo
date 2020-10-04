@@ -2,7 +2,8 @@ package http
 
 import (
 	"context"
-	"go-micro-demo/10-micro-hystrix-web2micro/web/proto"
+	"github.com/afex/hystrix-go/hystrix"
+	"go-micro-demo/11-micro-hystrix-wrapper/web/proto"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -32,9 +33,28 @@ func GetProdList(c *gin.Context) {
 		c.JSON(500, gin.H{
 			"status": err.Error()})
 	} else {
-		prodRes, _ := prodService.GetProdList(context.Background(), &prodReq)
-
-		c.JSON(200, gin.H{"data": prodRes.Data})
+		// 超时代码
+		// 1.配置config
+		configA := hystrix.CommandConfig{
+			Timeout: 1000,
+		}
+		// 2.配置command
+		hystrix.ConfigureCommand("getProds", configA)
+		// 3.执行Do方法
+		var prodRes *proto.ProdListResponse
+		err := hystrix.Do("getProds", func() error {
+			prodRes, err = prodService.GetProdList(context.Background(), &prodReq)
+			return err
+		}, func(e error) error {
+			// 降级 显示默认产品
+			prodRes, err = defaultProds()
+			return err
+		})
+		if err != nil {
+			c.JSON(500, gin.H{"status": err.Error()})
+		} else {
+			c.JSON(200, gin.H{"data": prodRes.Data})
+		}
 	}
 
 }
