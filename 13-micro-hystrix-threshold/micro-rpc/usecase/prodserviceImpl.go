@@ -2,7 +2,7 @@ package usecase
 
 import (
 	"context"
-	"go-micro-demo/12-micro-middleware-error/micro-rpc/proto"
+	"go-micro-demo/13-micro-hystrix-threshold/micro-rpc/proto"
 	"log"
 	"strconv"
 	"time"

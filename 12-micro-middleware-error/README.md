@@ -23,7 +23,8 @@ curl --location --request POST 'localhost:9000/v1/prods' \
 }
 ```
 
-- 商品详情(这个是没有hystrix配置的)
+- 商品详情
+
 ```
 curl --location --request GET 'localhost:9000/v1/prods/1'
 

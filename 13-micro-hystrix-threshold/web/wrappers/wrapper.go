@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/afex/hystrix-go/hystrix"
 	"github.com/micro/go-micro/v2/client"
-	"go-micro-demo/12-micro-middleware-error/web/models"
-	"go-micro-demo/12-micro-middleware-error/web/proto"
+	"go-micro-demo/13-micro-hystrix-threshold/web/models"
+	"go-micro-demo/13-micro-hystrix-threshold/web/proto"
 	"strconv"
 )
 
@@ -39,12 +39,16 @@ type ProdsWrapper struct {
 // Call 调用方法
 func (p *ProdsWrapper) Call(ctx context.Context, req client.Request, rsp interface{}, opts ...client.CallOption) error {
 	cmdName := req.Service() + "." + req.Endpoint()
-	configA := hystrix.CommandConfig{Timeout: 1000}
+	configA := hystrix.CommandConfig{
+		Timeout:                1000, // 超时时间 单位毫秒
+		RequestVolumeThreshold: 5,    // 请求数量
+		ErrorPercentThreshold:  50,   // 错误百分比
+		SleepWindow:            5000, // 尝试正常请求时间 单位毫秒 默认为5秒
+	}
 	hystrix.ConfigureCommand(cmdName, configA)
 	return hystrix.Do(cmdName, func() error {
 		return p.Client.Call(ctx, req, rsp)
 	}, func(e error) error {
-		//defaultProds(rsp) // 增加了业务层方法，这里在内部断言会失败，所以返回nil
 		defaultData(rsp)
 		return nil
 	})
