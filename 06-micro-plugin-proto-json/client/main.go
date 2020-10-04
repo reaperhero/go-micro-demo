@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"go-micro-demo/06-micro-plugin-proto-json/client/models"
 	"log"
 
 	"github.com/micro/go-micro/client"
@@ -11,20 +12,21 @@ import (
 	"github.com/micro/go-plugins/registry/etcd"
 )
 
-// 由于http的插件还是1.0的，其它的client还是使用v1版本,不然会报 {"id":"go.micro.micro-rpc","code":500,"detail":"none available","status":"Internal Server Error"}
+// 调用http api json tag不一致处理
+// 使用第三方包 github.com/favadi/protoc-go-inject-tag
 func callAPI(s selector.Selector) {
 	myClient := http.NewClient(
 		client.Selector(s),
 		client.ContentType("application/json"),
 	)
-	req := myClient.NewRequest("ProdSrv", "/v1/prods", map[string]string{})
-	var rsp map[string]interface{}
+	req := myClient.NewRequest("ProdSrv", "/v1/prods", models.ProdRequest{Size: 3})
+	var rsp models.ProdListResponse
 	err := myClient.Call(context.Background(), req, &rsp)
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	log.Println(rsp["data"]) // [map[ProdID:100 ProdName:Prod100] map[ProdID:101 ProdName:Prod101]]
+	log.Println(rsp.GetData()) // [ProdId:100 ProdName:"Prod100" ProdId:101 ProdName:"Prod101" ProdId:102 ProdName:"Prod102"]
 }
 
 func main() {
