@@ -2,10 +2,9 @@ package prods
 
 import (
 	"context"
-	"go-micro-demo/08-micro-middlewares-web2micro/micro-rpc/models"
+	"go-micro-demo/10-micro-hystrix-web2micro/micro-rpc/models"
 	"log"
 	"strconv"
-	"time"
 )
 
 // ProdService 商品服务
@@ -18,9 +17,6 @@ func newProd(id int32, pname string) *models.ProdModel {
 // GetProdList 返回商品列表
 func (*ProdService) GetProdList(ctx context.Context, in *models.ProdRequest, res *models.ProdListResponse) error {
 	log.Println(in.Size)
-	// 超时测试
-	time.Sleep(time.Second * 3)
-
 	models := make([]*models.ProdModel, 0)
 	var i int32
 	for i = 0; i < in.Size; i++ {
