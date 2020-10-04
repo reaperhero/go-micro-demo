@@ -1,0 +1,15 @@
+syntax = "proto3";
+
+package proto;
+
+message Request{
+  int32 id = 1;
+}
+
+message Response{
+  string data = 1;
+}
+
+service UsecaseService{
+  rpc Call(Request) returns(Response);
+}
